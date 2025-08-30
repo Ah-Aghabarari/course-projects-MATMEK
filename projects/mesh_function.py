@@ -3,7 +3,10 @@ from collections.abc import Callable
 
 
 def mesh_function(f: Callable[[float], float], t: float) -> np.ndarray:
-    raise NotImplementedError
+        vals = []
+    for ti in np.asarray(t, dtype=float):
+        vals.append(f(float(ti)))
+    return np.asarray(vals, dtype=float)
 
 
 def func(t: float) -> float:
