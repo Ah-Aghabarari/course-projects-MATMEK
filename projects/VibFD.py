@@ -11,6 +11,7 @@ We use various boundary conditions.
 import numpy as np
 import matplotlib.pyplot as plt
 import sympy as sp
+from scipy import sparse
 
 t = sp.Symbol("t")
 
@@ -185,6 +186,16 @@ class VibFD3(VibSolver):
 
     def __call__(self) -> np.ndarray:
         u = np.zeros(self.Nt + 1)
+        D2 = sparse.diags([1, -2, 1], np.array([-1, 0, 1]), (self.Nt+1, self.Nt+1), 'lil')
+        D2 *= (1/(self.dt**2))
+        Id = sparse.eye(self.Nt+1 , format='lil')
+        A = D2 + (self.w**2)*Id
+        b = np.zeros(self.Nt+1)
+        b[0] = self.I
+        #b[-1] = self.I
+        A[0, :3] = 1, 0, 0
+        A[-1, -3:] = 1, -4, 3
+        u = sparse.linalg.spsolve(A, b)
         return u
 
 
@@ -201,6 +212,20 @@ class VibFD4(VibFD2):
 
     def __call__(self) -> np.ndarray:
         u = np.zeros(self.Nt + 1)
+        D2 = sparse.diags([-1, 16, -30, 16, -1], np.array([-2, -1, 0, 1, 2]), (self.Nt+1, self.Nt+1), 'lil')
+        D2[1,:6] = 10, -15, -4, 14, -6, 1 
+        D2[-2,-6:] = 1, -6, 14, -4, -15, 10 
+        D2 *= (1/(12*self.dt**2))
+        Id = sparse.eye(self.Nt+1 , format='lil')
+        A = D2 + (self.w**2)*Id
+        b = np.zeros(self.Nt+1)
+        b[0] = self.I
+        b[-1] = self.I
+        A[0, :] = 0
+        A[0, 0] = 1
+        A[-1, :] = 0
+        A[-1, -1] = 1
+        u = sparse.linalg.spsolve(A, b)
         return u
 
 
