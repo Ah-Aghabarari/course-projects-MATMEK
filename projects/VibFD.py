@@ -153,6 +153,16 @@ class VibFD2(VibSolver):
 
     def __call__(self) -> np.ndarray:
         u = np.zeros(self.Nt + 1)
+        D2 = sparse.diags([1, -2, 1], np.array([-1, 0, 1]), (self.Nt+1, self.Nt+1), 'lil')
+        D2 *= (1/(self.dt**2))
+        Id = sparse.eye(self.Nt+1 , format='lil')
+        A = D2 + (self.w**2)*Id
+        b = np.zeros(self.Nt+1)
+        b[0] = self.I
+        b[-1] = self.I
+        A[0, :3] = 1, 0, 0
+        A[-1, -3:] = 0, 0, 1
+        u = sparse.linalg.spsolve(A, b)
         return u
 
 
